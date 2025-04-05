@@ -32,30 +32,6 @@ def fda_downloader(file_path="../data_raw/fda_data_raw.zip", url="https://www.fd
         print(f"Failed to download file. Status code: {response.status_code}")
 
 
-def smile_generator(data_path="../data_csv/Products.csv"):
-    df = pd.read_csv(data_path)
-    df['UniqueID'] = df.index
-    ActiveIngredient_list = df['ActiveIngredient'].tolist()
-
-    results = {'UniqueID': [], 'smiles': []}
-
-    for index, name in tqdm(list(enumerate(ActiveIngredient_list)), total=len(ActiveIngredient_list), desc="Fetching SMILES"):
-        start = time.time()  # Start per-compound timer
-        compounds = pcp.get_compounds(name, 'name')
-        duration = time.time() - start
-
-        if compounds:
-            results['smiles'].append(compounds[0].isomeric_smiles)
-            results['UniqueID'].append(index)
-
-        else:
-            tqdm.write(f"{index}: {name} -> Not found (took {duration:.2f}s)")
-
-    df_smile = pd.DataFrame(results)
-    df_products = pd.merge(df, df_smile, on='UniqueID')
-    df_products.to_csv(data_path, index=False)
-
-
 
 
 # Module 2: Unziper
