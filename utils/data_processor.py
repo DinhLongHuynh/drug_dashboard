@@ -17,6 +17,7 @@ def ingredients_cleaner(ingredietns):
 def smile_generator(data_path="../data_csv",data_file='Products.csv'):
     df = pd.read_csv("/".join([data_path,data_file]))
     df['ProductID'] = df.index
+    df = df[df['ReferenceDrug']==1]
     ActiveIngredient_list = df['ActiveIngredient'].tolist()
 
     results = {'ProductID': [], 'smiles': []}
