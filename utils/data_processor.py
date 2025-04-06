@@ -19,11 +19,12 @@ def smile_generator(data_path="../data_csv",data_file='Products.csv'):
     df['ProductID'] = df.index
     df = df[df['ReferenceDrug']==1]
     ActiveIngredient_list = df['ActiveIngredient'].tolist()
+    ProdcutID_list = df['ProductID'].tolist()
 
     results = {'ProductID': [], 'smiles': []}
 
     # Loops through products
-    for index, ingredients in tqdm(list(enumerate(ActiveIngredient_list)), total=len(ActiveIngredient_list), desc="Fetching SMILES"):
+    for index, ingredients in tqdm(list(zip(ProdcutID_list, ActiveIngredient_list)), total=len(ActiveIngredient_list), desc="Fetching SMILES"):
         start = time.time()
         ingredients = ingredients_cleaner(ingredients)
         
