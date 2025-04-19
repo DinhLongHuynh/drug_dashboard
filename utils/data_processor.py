@@ -50,6 +50,31 @@ class DataProcessor():
 
         self.df_smile = pd.DataFrame(results)
     
+    def standardize_smiles(self, smiles,desalt,remove_stereo):
+        mol = Chem.MolFromSmiles(smiles)
+        if mol is None:
+            return None
+        try:
+            if desalt:
+                frags = Chem.GetMolFrags(mol, asMols=True)
+                mol = max(frags, key=lambda m: m.GetNumAtoms())
+            if remove_stereo:
+                Chem.RemoveStereochemistry(mol)
+            
+            Chem.SanitizeMol(mol)
+            return Chem.MolToSmiles(mol, canonical=True)
+        
+        except Exception as e:
+            print(f"Error in standardizing {smiles}: {str(e)}")
+            return mol 
+        
+
+    def smile_standardizer(self,smile_columns = 'smiles',desalt=True,remove_stereo=True):
+        tqdm.pandas()
+        self.df_smile['standardized_smiles'] = self.df_smile[smile_columns].progress_apply(lambda smiles: self.standardize_smiles(smiles,desalt=desalt,remove_stereo=remove_stereo))
+
+
+
     def get_properties(self):
         self.df_smile['mol'] = self.df_smile['smiles'].apply(Chem.MolFromSmiles)
         self.df_smile['MolWt'] = self.df_smile['mol'].apply(Descriptors.MolWt)
