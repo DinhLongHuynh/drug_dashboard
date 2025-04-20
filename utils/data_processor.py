@@ -49,6 +49,7 @@ class DataProcessor():
                     tqdm.write(f"{index}: {name} -> Not found (took {duration:.2f}s)")
 
         self.df_smile = pd.DataFrame(results)
+        print('All SMILES have been generated')
     
     def standardize_smiles(self, smiles,desalt,remove_stereo):
         mol = Chem.MolFromSmiles(smiles)
@@ -58,6 +59,7 @@ class DataProcessor():
             if desalt:
                 frags = Chem.GetMolFrags(mol, asMols=True)
                 mol = max(frags, key=lambda m: m.GetNumAtoms())
+                # Need to neutralize function group after remove charge
             if remove_stereo:
                 Chem.RemoveStereochemistry(mol)
             
@@ -71,7 +73,9 @@ class DataProcessor():
 
     def smile_standardizer(self,smile_columns = 'smiles',desalt=True,remove_stereo=True):
         tqdm.pandas()
-        self.df_smile['standardized_smiles'] = self.df_smile[smile_columns].progress_apply(lambda smiles: self.standardize_smiles(smiles,desalt=desalt,remove_stereo=remove_stereo))
+        self.df_smile['standardized_smiles'] = self.df_smile[smile_columns].progress_apply(lambda smiles: self.standardize_smiles(smiles,desalt=desalt,remove_stereo=remove_stereo), 
+                                                                                           desc="Standardizing SMILES")
+        print('All SMILES have been standardized')
 
 
 
@@ -87,6 +91,8 @@ class DataProcessor():
         self.df_smile['HeavyAtomCount'] = self.df_smile['mol'].apply(Descriptors.HeavyAtomCount)
         self.df_smile['FractionCSP3'] = self.df_smile['mol'].apply(Descriptors.FractionCSP3)
         self.df_smile['FormalCharge'] = self.df_smile['mol'].apply(Chem.GetFormalCharge)
+        # Get more properties if needed
+        print('All physiochemical properties have been standardized')
 
     def get_fingerpirnt(self):
         pass
