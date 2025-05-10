@@ -4,6 +4,8 @@ import pandas as pd
 import pubchempy as pcp
 from rdkit import Chem
 from rdkit.Chem import Descriptors
+from molvs import Standardizer
+
 
 class DataProcessor():
     def __init__(self, data_path="../data_csv", data_file = 'Products.csv'):
@@ -51,24 +53,21 @@ class DataProcessor():
         self.df_smile = pd.DataFrame(results)
         print('All SMILES have been generated')
     
-    def standardize_smiles(self, smiles,desalt,remove_stereo):
+    def standardize_smiles(self, smiles):
         mol = Chem.MolFromSmiles(smiles)
         if mol is None:
             return None
         try:
-            if desalt:
-                frags = Chem.GetMolFrags(mol, asMols=True)
-                mol = max(frags, key=lambda m: m.GetNumAtoms())
-                # Need to neutralize function group after remove charge
-            if remove_stereo:
-                Chem.RemoveStereochemistry(mol)
-            
-            Chem.SanitizeMol(mol)
+            mol = Standardizer().tautomer_parent(mol, skip_standardization = False)
+            mol = Standardizer().fragment_parent(mol, skip_standardization = False)
+            mol = Standardizer().stereo_parent(mol, skip_standardization = False)
+            mol = Standardizer().isotope_parent(mol, skip_standardization = False)
+            mol = Standardizer().charge_parent(mol, skip_standardization = False)
             return Chem.MolToSmiles(mol, canonical=True)
         
         except Exception as e:
             print(f"Error in standardizing {smiles}: {str(e)}")
-            return mol 
+            return smiles 
         
 
     def smile_standardizer(self,smile_columns = 'smiles',desalt=True,remove_stereo=True):
