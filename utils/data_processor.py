@@ -70,7 +70,7 @@ class DataProcessor():
             return smiles 
         
 
-    def smile_standardizer(self,smile_columns = 'smiles',desalt=True,remove_stereo=True):
+    def smile_standardizer(self,smile_columns = 'smiles'):
         tqdm.pandas()
         self.df_smile['standardized_smiles'] = self.df_smile[smile_columns].progress_apply(lambda smiles: self.standardize_smiles(smiles,desalt=desalt,remove_stereo=remove_stereo), 
                                                                                            desc="Standardizing SMILES")
@@ -78,8 +78,8 @@ class DataProcessor():
 
 
 
-    def get_properties(self):
-        self.df_smile['mol'] = self.df_smile['smiles'].apply(Chem.MolFromSmiles)
+    def get_properties(self, smiles_columns = 'smiles'):
+        self.df_smile['mol'] = self.df_smile[smiles_columns].apply(Chem.MolFromSmiles)
         self.df_smile['MolWt'] = self.df_smile['mol'].apply(Descriptors.MolWt)
         self.df_smile['LogP'] = self.df_smile['mol'].apply(Descriptors.MolLogP)
         self.df_smile['NumHDonors'] = self.df_smile['mol'].apply(Descriptors.NumHDonors)
